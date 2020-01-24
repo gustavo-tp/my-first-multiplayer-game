@@ -1,0 +1,9 @@
+npx serve
+npm init
+npm i express
+mkdir public
+mv game.js keyboard-listener.js render-screen.js public/
+mv client.html public/index.html
+npm init esm -y
+npm i socket.io
+npx nodemon

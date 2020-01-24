@@ -1,0 +1,63 @@
+ssh -R filipe:80:localhost:80 serveo.net
+ngrok
+
+# verificar uso servidor na porta 80
+netstat -tulpn | grep :80
+
+nvm (node version manager)
+nvm ls-remote -> lista todas as versões do node disponíveis de forma remota
+nvm install v12.9.0
+
+rsync -> consegue deixar uma pasta local e uma pasta remota sempre sincronizadas
+rsync -av --exclude='.git/' . hostgator:./jogo (hostigator foi adicionado no ~/.ssh/config)
+
+Host hostgator
+	User root
+	HostName 162.241.55.117
+	Port 22022
+
+npm start
+
+PM2 -> identifica se algum processo caiu pra reiniciar e o serviço continuar em funcionamento
+Redis -> compartilhar estado do jogo e sockts entre todas as CPUs
+
+gitpod.io/#repo...
+expo start --tunnel -> ngrok
+
+Separation of concerns
+
+use strict
+
+De quem é esse código?
+
+Observer -> (objeto subject é o objeto principal, outros objetos observers vão observar o subjetc)
+Factory -> isolar camada jogo
+injeção de dependência -> injetar instância objeto jogo (no good - faz parte da segunda camada de abstração onde a camada de input ainda conhece a camada de jogo)
+
+object literals -> command pattern
+	-> strategy pattern
+
+quadTree
+
+commonJS -> require('...')
+Browserify
+ECMAScript Modules (ESM)
+
+adicionar no package.json (node 13.3 - aceita ESM) -> sucrase aceita ESM independente da versão
+																									 -> alternativa ao sucrase é o módulo esm expecífico para ESM
+	-> 	"main": "server.js",
+  		"type": "module",
+
+Single source of truth
+
+Event Emitter
+
+# lista de ajustes
+1. Reajustar o canvas no setup
+2. Fazer o "unsubscribe" dos observers caso o client cair
+3. Sistema de pontuação
+4. Emitir o som a cada pontuação e um som diferente a cada 100 pts marcados
+5. Fazer o jogador dar a volta no canvas (teleporte)
+6. Refatorar funções anônimas para outros módulos principalmente relacionados ao network
+7. Filtrar os comandos enviados ao backend
+8. Gitpod com versão fixa do Node.js
