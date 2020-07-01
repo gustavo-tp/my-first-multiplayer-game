@@ -3,15 +3,15 @@ export default function createGame() {
     players: {},
     fruits: {},
     screen: {
-      width: 10,
-      height: 10
+      width: 25,
+      height: 25
     }
   };
 
   const observers = [];
 
   function start() {
-    const frequency = 2000;
+    const frequency = 5000;
 
     setInterval(addFruit, frequency);
   }
@@ -43,7 +43,8 @@ export default function createGame() {
 
     state.players[playerId] = {
       x: playerX,
-      y: playerY
+      y: playerY,
+      score: 0
     };
 
     notifyAll({
@@ -66,15 +67,46 @@ export default function createGame() {
   }
 
   function addFruit(command) {
-    const fruitId = command
-      ? command.fruitId
-      : Math.floor(Math.random() * 10000000);
-    const fruitX = command
-      ? command.fruitX
-      : Math.floor(Math.random() * state.screen.width);
-    const fruitY = command
-      ? command.fruitY
-      : Math.floor(Math.random() * state.screen.height);
+    if (
+      Object.keys(state.fruits).length ===
+      state.screen.width * state.screen.height
+    ) {
+      return;
+    }
+
+    if (!command || checkForFruitInPixel(command)) {
+      command = generateRandomCommandToAddFruits();
+    }
+
+    function generateRandomCommandToAddFruits() {
+      const command = {};
+
+      command.fruitId = Math.floor(Math.random() * 10000000);
+      command.fruitX = Math.floor(Math.random() * state.screen.width);
+      command.fruitY = Math.floor(Math.random() * state.screen.height);
+
+      if (checkForFruitInPixel(command)) {
+        return generateRandomCommandToAddFruits();
+      }
+
+      return command;
+    }
+
+    function checkForFruitInPixel(command) {
+      for (const fruitId in state.fruits) {
+        const fruit = state.fruits[fruitId];
+
+        if (fruit.x === command.fruitX && fruit.y === command.fruitY) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    const fruitId = command.fruitId;
+    const fruitX = command.fruitX;
+    const fruitY = command.fruitY;
 
     state.fruits[fruitId] = {
       x: fruitX,
@@ -107,25 +139,33 @@ export default function createGame() {
       ArrowUp(player) {
         if (player.y - 1 >= 0) {
           player.y -= 1;
-          return;
+          //return;
+        } else {
+          player.y = state.screen.height - 1;
         }
       },
       ArrowRight(player) {
         if (player.x + 1 < state.screen.width) {
           player.x += 1;
-          return;
+          //return;
+        } else {
+          player.x = 0;
         }
       },
       ArrowDown(player) {
         if (player.y + 1 < state.screen.height) {
           player.y += 1;
-          return;
+          //return;
+        } else {
+          player.y = 0;
         }
       },
       ArrowLeft(player) {
         if (player.x - 1 >= 0) {
           player.x -= 1;
-          return;
+          //return;
+        } else {
+          player.x = state.screen.width - 1;
         }
       }
     };
@@ -150,9 +190,30 @@ export default function createGame() {
 
       if (player.x === fruit.x && player.y === fruit.y) {
         console.log(`COLLISION between ${playerId} and ${fruitId}`);
+
         removeFruit({ fruitId });
+        notifyAll({
+          type: 'remove-fruit',
+          fruitId
+        });
+
+        increaseScore({ playerId });
       }
     }
+  }
+
+  function increaseScore(command) {
+    const playerId = command.playerId;
+    const player = state.players[playerId];
+    player.score++;
+
+    notifyAll({
+      type: 'update-score-table',
+      players: state.players,
+      scoredPlayerId: playerId
+    });
+
+    console.log(`Player ${playerId} scored! Total point now: ${player.score}`);
   }
 
   return {

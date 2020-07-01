@@ -4,28 +4,22 @@
     <meta charset="UTF-8" />
     <title>Meu Primeiro Jogo Multiplayer</title>
 
-    <style>
-      #screen {
-        border: 10px solid #ccc;
-        image-rendering: pixelated;
-        image-rendering: crisp-edges;
-        image-rendering: -moz-crisp-edges;
-        width: 400px;
-        height: 400px;
-      }
-    </style>
+    <link rel="stylesheet" href="./styles.css" />
     <script src="/socket.io/socket.io.js"></script>
   </head>
   <body>
     <canvas id="screen" width="10" height="10"></canvas>
+    <table id="score-table"></table>
 
     <script type="module">
       import createGame from './game.js';
       import createKeyboardListener from './keyboard-listener.js';
       import renderScreen from './render-screen.js';
+      import scoreTable from './score-table.js';
 
       const game = createGame();
       const keyboardListener = createKeyboardListener(document);
+      const score = scoreTable();
 
       const socket = io();
 
@@ -34,7 +28,10 @@
         console.log(`Player connected on Client with id: ${playerId}`);
 
         const screen = document.getElementById('screen');
+        const scoreTable = document.getElementById('score-table');
+
         renderScreen(screen, game, requestAnimationFrame, playerId);
+        score.setScoreTableSelector(scoreTable);
       });
 
       socket.on('setup', state => {
@@ -61,9 +58,9 @@
       socket.on('move-player', command => {
         console.log(`Receiving ${command.type} -> ${command.playerId}`);
 
-        const platerId = socket.id;
+        const playerId = socket.id;
 
-        if (platerId !== command.playerId) {
+        if (playerId !== command.playerId) {
           game.movePlayer(command);
         }
       });
@@ -76,6 +73,16 @@
       socket.on('remove-fruit', command => {
         console.log(`Receiving ${command.type} -> ${command.fruitId}`);
         game.removeFruit(command);
+      });
+
+      socket.on('update-score-table', command => {
+        const playerId = socket.id;
+
+        score.updateScoreTable({ ...command, playerId });
+      });
+
+      socket.on('disconnect', () => {
+        keyboardListener.unsubscribeAll();
       });
     </script>
   </body>
